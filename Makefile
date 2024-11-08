@@ -5,156 +5,73 @@
 #                                                     +:+ +:+         +:+      #
 #    By: ledelbec <ledelbec@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
-#    Created: 2024/01/02 00:44:50 by ledelbec          #+#    #+#              #
-#    Updated: 2024/02/29 10:43:21 by ledelbec         ###   ########.fr        #
+#    Created: 2023/12/05 14:39:36 by ledelbec          #+#    #+#              #
+#    Updated: 2023/12/27 13:34:46 by ledelbec         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
+# additional functions:
+#
+# - realloc (TODO remove)
+# - sprintf (TODO remove)
+# - gettimeofday (For animations)
+# - srand / rand
+
 SOURCES = \
 	src/main.c \
-	src/game_free.c \
-	src/load_sprites.c \
-	src/load_sprites2.c \
-	src/hooks.c \
+	src/expose.c \
+	src/tiles.c \
 	src/sprite.c \
-	src/update.c \
-	src/hud.c \
-	src/gui.c \
-	src/gui_text.c \
-	src/menu.c \
-	src/button.c \
-	src/button_utils.c \
-	src/banner.c \
-	src/banner_utils.c \
-	src/ribbon.c \
-	src/utils.c \
+	src/anim.c \
 	src/entity.c \
-	src/end.c \
-	src/end_utils.c \
-	src/end_mandatory.c \
-	src/camera.c \
-	src/getms.c \
-	src/anim/anim.c \
-	\
-	src/arena_alloc.c \
-	\
-	src/edit/edit.c \
-	src/edit/place.c \
-	src/edit/buttons.c \
-	src/edit/click.c \
-	\
-	src/map2/load.c \
-	src/map2/load_utils.c \
-	src/map2/draw.c \
-	src/map2/draw_utils.c \
-	src/map2/collision.c \
-	src/map2/save.c \
-	src/map2/save_utils.c \
-	src/map2/check_errors.c \
-	src/map2/check_finish.c \
-	src/map2/utils.c \
-	src/map2/free.c \
-	src/map2/draw_tiles.c \
-	\
-	src/entities/player.c \
-	src/entities/player_update.c \
-	src/entities/player_move.c \
-	src/entities/gem.c \
-	src/entities/knight_mandatory.c \
-	src/math/box.c \
-	src/math/vec2_basic.c \
-	src/math/vec2_calc.c \
-	src/math/vec2i.c \
-	src/math/a_star.c \
-	src/math/a_star_utils.c \
-	src/data/vector.c \
-	src/data/vector_free.c \
-	\
-	src/render/renderer.c \
+	src/entity/collectible.c \
+	src/entity/door.c \
+	src/entity/projectile.c \
+	src/entity/golem.c \
+	src/entity/wall.c \
+	src/player/player.c \
+	src/player/dash.c \
+	src/render/draw.c \
 	src/render/draw_sprite.c \
-	src/render/node.c \
-	src/render/text.c \
-	src/render/pixel.c \
-	src/render/blur.c \
-	src/render/font.c
+	src/render/draw_debug.c \
+	src/render/light.c \
+	src/render/graph.c \
+	src/physics/entity.c \
+	src/physics/box.c \
+	src/physics/vec2_common.c \
+	src/physics/vec2_calc.c \
+	src/physics/vec2i.c \
+	src/map/map.c \
+	src/map/verif.c \
+	src/map/ground_tile.c \
+	src/ui/base_ui.c \
+	src/ui/health_bar.c \
+	src/vector.c
 
-BONUS_SOURCES = \
-	src/main.c \
-	src/game_free.c \
-	src/load_sprites.c \
-	src/load_sprites2.c \
-	src/hooks.c \
-	src/sprite.c \
-	src/update.c \
-	src/hud.c \
-	src/gui.c \
-	src/gui_text.c \
-	src/menu.c \
-	src/button.c \
-	src/button_utils.c \
-	src/banner.c \
-	src/banner_utils.c \
-	src/ribbon.c \
-	src/utils.c \
-	src/entity.c \
-	src/end.c \
-	src/end_utils.c \
-	src/end_bonus.c \
-	src/camera.c \
-	src/getms_bonus.c \
-	src/anim/anim.c \
+TEXTURES = \
+	textures/exit_door/exit_door1.png \
+	textures/exit_door/exit_door2.png \
+	textures/exit_door/exit_door3.png \
+	textures/exit_door/exit_door4.png \
+	textures/exit_door/exit_door5.png \
+	textures/exit_door/exit_door6.png \
 	\
-	src/arena_alloc.c \
+	$(wildcard textures/gen/*.png) \
+	$(wildcard textures/gem/*.png) \
+	$(wildcard textures/ui/*.png) \
 	\
-	src/edit/edit.c \
-	src/edit/place.c \
-	src/edit/buttons.c \
-	src/edit/click.c \
-	\
-	src/map2/load.c \
-	src/map2/load_utils.c \
-	src/map2/draw.c \
-	src/map2/draw_utils.c \
-	src/map2/collision.c \
-	src/map2/save.c \
-	src/map2/save_utils.c \
-	src/map2/check_errors.c \
-	src/map2/check_finish.c \
-	src/map2/utils.c \
-	src/map2/free.c \
-	src/map2/draw_tiles.c \
-	\
-	src/entities/knight.c \
-	src/entities/knight_ai.c \
-	src/entities/player.c \
-	src/entities/player_update.c \
-	src/entities/player_move.c \
-	src/entities/gem.c \
-	src/math/box.c \
-	src/math/vec2_basic.c \
-	src/math/vec2_calc.c \
-	src/math/vec2i.c \
-	src/math/a_star.c \
-	src/math/a_star_utils.c \
-	src/data/vector.c \
-	src/data/vector_free.c \
-	\
-	src/render/renderer.c \
-	src/render/draw_sprite.c \
-	src/render/node.c \
-	src/render/text.c \
-	src/render/pixel.c \
-	src/render/blur.c \
-	src/render/font.c
+	textures/player/player.png \
+	textures/golem.png \
+	textures/projectile.png \
+	textures/ice_wall.png
 
 NAME = so_long
 
-CC = clang
-CFLAGS += -Wall -Wextra -Imlx -Ilibft -MMD -g3 -fPIC -O2 -fno-builtin # -Werror
-LDFLAGS = -lm -lX11 -lXext
+CFLAGS = -Wall -Wextra -Imlx -Ilibft -MMD -g3 -fPIC -O2 -fno-builtin # -Werror
+LDFLAGS= -lm -lX11 -lXext
 
 OBJECTS = $(SOURCES:.c=.o)
-BONUS_OBJECTS = $(BONUS_SOURCES:.c=.o)
+TEXTURES_XPM = $(TEXTURES:.png=.xpm)
 
 all: $(NAME)
 
@@ -164,15 +81,11 @@ mlx/libmlx.a:
 libft/libft.a:
 	cd libft && make
 
-$(NAME): mlx/libmlx.a libft/libft.a textures/gen $(OBJECTS)
+$(NAME): mlx/libmlx.a libft/libft.a textures/gen $(TEXTURES_XPM) $(OBJECTS)
 	$(CC) -o $(NAME) $(OBJECTS) mlx/libmlx.a libft/libft.a $(LDFLAGS)
 
-bonus: CFLAGS+=-DBONUS
-bonus: mlx/libmlx.a libft/libft.a textures/gen $(BONUS_OBJECTS)
-	$(CC) -o $(NAME) $(BONUS_OBJECTS) mlx/libmlx.a libft/libft.a $(LDFLAGS)
-
-%.o: %.c
-	$(CC) $(CFLAGS) -c -o $@ $<
+%.xpm: %.png
+	convert $< $@
 
 -include $(OBJECTS:.o=.d)
 
@@ -180,14 +93,11 @@ textures/gen:
 	bash spritesheet.sh
 
 clean:
-	rm -rf $(OBJECTS) $(OBJECTS:.o=.d) $(BONUS_OBJECTS) $(BONUS_OBJECTS:.o=.d)
+	rm -rf $(OBJECTS) $(TEXTURES_XPM) textures/gen
 	cd mlx && make clean && rm -f libmlx.a
 	cd libft && make fclean
 
 fclean: clean
-	rm -rf textures/gen
 	rm -f $(NAME)
 
 re: fclean all
-
-.PHONY: all clean fclean re

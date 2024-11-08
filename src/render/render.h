@@ -5,139 +5,47 @@
 /*                                                    +:+ +:+         +:+     */
 /*   By: ledelbec <ledelbec@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/02/03 15:17:37 by ledelbec          #+#    #+#             */
-/*   Updated: 2024/02/27 15:48:00 by ledelbec         ###   ########.fr       */
+/*   Created: 2023/12/26 22:37:07 by ledelbec          #+#    #+#             */
+/*   Updated: 2023/12/27 13:34:11 by ledelbec         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef RENDER_H
 # define RENDER_H
 
-# include "../math/vec2.h"
-# include "../arena_alloc.h"
-# include <stdbool.h>
-# include "mlx_int.h"
+# include "graph.h"
+# include "../sprite.h"
+# include <mlx.h>
+# include <mlx_int.h>
 
 typedef struct s_game	t_game;
+typedef struct s_sprite t_sprite;
+typedef struct s_entity t_entity;
+typedef struct s_box	t_box;
+
+typedef struct s_draw_opts
+{
+	int			flipped;
+	t_effect	effect;
+}	t_draw_opts;
+
+t_vec2			camera_offset(t_game *game);
+
+void			draw_sprite(t_game *game, t_sprite *sprite, t_vec2i pos, t_draw_opts ops);
+void			draw_ui(t_game *game, t_sprite *sprite, t_vec2 pos, t_effect effect);
+void			draw_debug_box(t_game *game, t_box *box, int color);
 
 /*
- * Color manipulation
- */
-
-typedef struct s_trgb
-{
-	unsigned char	b;
-	unsigned char	g;
-	unsigned char	r;
-	unsigned char	t;
-}	t_trgb;
-
-t_trgb		get_pixel_color(t_img *img, int x, int y);
-void		set_pixel_color(t_img *img, int x, int y, t_trgb color);
-
-typedef struct s_font
-{
-	t_img	*chars[256];
-}	t_font;
-
-t_font		*font_load(t_game *game, char *path);
-void		font_free(t_game *game, t_font *font);
-
-typedef enum e_node_type
-{
-	NODE_SPRITE,
-	NODE_TEXT,
-	NODE_BLUR,
-}	t_node_type;
-
-typedef struct s_node
-{
-	t_node_type				type;
-	struct s_node			*next;
-	int						order;
-	bool					freed;
-	union
-	{
-		struct s_node_sprite
-		{
-			t_img			*ptr;
-			t_vec2			pos;
-			bool			flipped;
-			bool			camera;
-		}	sprite;
-		struct s_node_text
-		{
-			t_font			*font;
-			char			*str;
-			t_vec2			pos;
-			unsigned int	color;
-		}	text;
-		struct s_node_blur
-		{
-			int	px;
-		}	blur;
-	};
-}	t_node;
-
-typedef struct s_renderer
-{
-	t_node			*root;
-	unsigned int	*pixels;
-	t_arena			allocator;
-}	t_renderer;
-
-t_renderer	*rdr_new(void);
-void		rdr_free(t_renderer *rdr);
-void		rdr_clear(t_renderer *rdr);
-void		rdr_draw(t_renderer *rdr, t_game *game);
-
-typedef struct s_add_sprite
-{
-	int		order;
-	int		level;
-	bool	flipped;
-	bool	camera;
-}	t_add_sprite;
+  Draw the backbuffer to the screen.
+*/
+void			present(t_game *game);
+void			clear_screen(t_game *game);
 
 /*
- * Create a new node representing a sprite.
- */
-void		rdr_add_sprite(t_renderer *rdr, t_img *sp, t_vec2 pos,
-				t_add_sprite as);
+  Calculate the light level for each pixels of the window.
+*/
+void			apply_lighting(t_game *game);
 
-typedef struct s_add_text
-{
-	int				order;
-	int				level;
-	t_font			*font;
-	unsigned int	color;
-}	t_add_text;
-
-void		rdr_add_text(t_renderer *rdr, char *str, t_vec2 pos, t_add_text at);
-
-typedef struct s_draw
-{
-	int		scale;
-	bool	flipped;
-	bool	camera;
-}	t_draw;
-
-/*
- * Add a Box blur filter to the whole screen.
- */
-void		rdr_add_blur(t_renderer *rdr, int px, int z_index);
-
-typedef struct s_draw_text
-{
-	t_font			*font;
-	unsigned int	color;
-}	t_draw_text;
-
-void		rdr_draw_sprite(t_game *game, t_img *sp, t_vec2 pos, t_draw draw);
-void		rdr_draw_glyph(t_game *game, char c, t_vec2 pos, t_draw_text draw);
-void		rdr_draw_text(t_game *game, char *str, t_vec2 pos,
-				t_draw_text draw);
-void		rdr_blur_screen(t_game *game, int px);
-void		rdr_clear_screen(t_game *game, unsigned int color);
+unsigned int	blend_colors(unsigned int a, unsigned int b, float ratio);
 
 #endif

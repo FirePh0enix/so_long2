@@ -1,13 +1,7 @@
 *.o
 *.d
-*.a
 so_long
+*.a
+src/textures.h
 *.xpm
-libft/*.o
-compile_flags.txt
-dist/
-push/
-
 textures/gen
-.DS_Store
-*.tar.gz

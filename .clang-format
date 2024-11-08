@@ -1,0 +1,13 @@
+---
+# https://clang.llvm.org/docs/ClangFormatStyleOptions.html
+# 42 Norme
+BasedOnStyle: LLVM
+UseTab: Always
+IndentWidth: 4
+TabWidth: 4
+
+BreakBeforeBraces: Allman
+
+AlignConsecutiveDeclarations: true
+---
+

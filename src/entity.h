@@ -5,123 +5,71 @@
 /*                                                    +:+ +:+         +:+     */
 /*   By: ledelbec <ledelbec@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/01/02 12:17:29 by ledelbec          #+#    #+#             */
-/*   Updated: 2024/02/29 11:28:26 by ledelbec         ###   ########.fr       */
+/*   Created: 2023/12/26 21:45:18 by ledelbec          #+#    #+#             */
+/*   Updated: 2023/12/26 21:45:42 by ledelbec         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef ENTITY_H
 # define ENTITY_H
 
-# include "math/box.h"
-# include "math/vec2.h"
-# include "arena_alloc.h"
-# include <sys/select.h>
+# include "physics/box.h"
+# include "physics/physics.h"
+# include "physics/vec2.h"
+# include "sprite.h"
 
-typedef struct s_entity	t_entity;
-typedef struct s_game	t_game;
-typedef struct s_img	t_img;
-typedef struct s_anim	t_anim;
-typedef struct s_level	t_level;
+typedef void (*t_spawn)(t_game *game, void *entity, void *ext);
+typedef void (*t_update)(t_game *game, void *entity, void *ext);
+typedef void (*t_mouse_event)(t_game *game, void *entity, void *ext,
+							  int button);
 
-typedef void			(*t_update)(t_game *, t_entity *);
-typedef void			(*t_free)(t_entity *);
-
-typedef enum etype
+typedef struct s_entity_type
 {
-	ETYPE_PLAYER,
-	ETYPE_GEM,
-	ETYPE_ENEMY
-}	t_etype;
+	t_sprite		*sprite;
+	int				extension_size;
+	t_spawn			spawn_hook;
+	t_update		update_hook;
+	t_mouse_event	mouse_event_hook;
+	int				render_order;
+}	t_entity_type;
 
-typedef enum state
-{
-	STATE_ALIVE = 0,
-	STATE_DEAD,
-	STATE_NOT_ALIVE
-}	t_state;
+# define STATE_DEAD 0
+# define STATE_ALIVE 1
+# define STATE_PROP 2
 
+# define MASK_ENEMY (1 << 0)
+# define MASK_PLAYER (1 << 1)
+# define MASK_SOLID (1 << 2)
+
+# define GROUND_FRICTION 0.1
+# define AIR_FRICTION 0.05
+
+// Everything not in the tilemap like collectibles, enemies, etc...
+//
+// state - Can be dead (0), alive (1), prop (2)
 typedef struct s_entity
 {
-	t_game		*game;
-	t_etype		type;
-	t_vec2		pos;
-	t_update	update;
-	t_free		free;
-	void		*extension;
-	t_img		*sprite;
-	t_vec2		sprite_offset;
-	int			z_index;
-	t_box		box;
-	t_vec2		vel;
-	t_state		state;
-	bool		flipped;
-	int			health;
-	int			max_health;
-	int			level;
+	t_entity_type	*type;
+	t_game			*game;
+	t_sprite		*sprite;
+	int				x;
+	int				y;
+	t_vec2			velocity;
+	void			*extension;
+	int				state;
+	int				flipped;
+	int				health;
+	int				max_health;
+	int				collision_mask;
+	t_box			hitbox;
+
+	int				blink_time;
+	int				current_blink_time;
 }	t_entity;
 
-// ----------------------------------------------
-// PLAYER
+t_entity	*new_entity(t_game *game, int x, int y, t_entity_type *type);
+t_vec2		entity_size(t_entity *entity);
 
-# define PLAYER_SPEED 3
-
-typedef struct s_player
-{
-	t_anim		*current_anim;
-	t_anim		*walk;
-	t_anim		*idle;
-	t_anim		*atk_side;
-	bool		is_p2;
-}	t_player;
-
-t_entity	*player_new(t_game *game, t_vec2 pos, int level, bool is_player2);
-void		player_update(t_game *game, t_entity *entity);
-
-int			_keycode(t_game *g, t_entity *e, int keycode, bool is_p2);
-void		move_player(t_game *game, t_entity *entity);
-
-// ----------------------------------------------
-// GEM
-
-t_entity	*gem_new(t_game *game, t_vec2 pos, int level);
-void		gem_update(t_game *game, t_entity *entity);
-
-// ----------------------------------------------
-// ENEMY
-
-typedef enum e_ai_state
-{
-	STATE_IDLE,
-	STATE_PATROLING,
-	STATE_CHASING,
-	STATE_ATTACKING,
-}	t_ai_state;
-
-typedef struct s_knight
-{
-	t_anim		*current_anim;
-	t_anim		*idle;
-	t_anim		*walk;
-	t_anim		*atk_side;
-
-	t_ai_state	state;
-	suseconds_t	action_end;
-
-	t_vec2i		*path;
-	int			current_path;
-	t_vec2		target_pos;
-
-	suseconds_t	last_attacked;
-
-	t_arena		arena;
-}	t_knight;
-
-t_entity	*knight_new(t_game *game, t_vec2 pos, int level);
-void		knight_update(t_game *game, t_entity *entity);
-
-void		knight_pick_action(t_entity *entity, t_knight *ext, t_level *map);
-
-void		entity_free(t_entity *entity);
+int			entity_effect(int color, int x, int y, t_entity *entity);
 
 #endif

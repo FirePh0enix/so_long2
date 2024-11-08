@@ -5,341 +5,184 @@
 /*                                                    +:+ +:+         +:+     */
 /*   By: ledelbec <ledelbec@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/01/02 00:52:33 by ledelbec          #+#    #+#             */
-/*   Updated: 2024/02/28 16:17:25 by ledelbec         ###   ########.fr       */
+/*   Created: 2023/12/05 14:36:47 by ledelbec          #+#    #+#             */
+/*   Updated: 2023/12/26 20:56:51 by ledelbec         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef SO_LONG_H
 # define SO_LONG_H
 
+# include <libft.h>
 # include <mlx.h>
 # include <mlx_int.h>
-# include <libft.h>
-# include <stdbool.h>
-# include "math/vec2.h"
-# include "gui.h"
-# include "edit/edit.h"
+# include <sys/select.h>
+
 # include "entity.h"
+# include "render/graph.h"
+# include "render/light.h"
+# include "render/render.h"
+# include "sprite.h"
+# include "ui/ui.h"
 
-# define WIN_WIDTH 1440
-# define WIN_HEIGHT 960
+# define PIXEL_SCALE 2
+# define TILE_SIZE 16
 
-# ifndef BONUS
-#  define BONUS 0
-# endif
+typedef struct s_map t_map;
 
-typedef struct s_game			t_game;
-typedef struct s_entity			t_entity;
-typedef struct s_map			t_map;
-typedef struct s_map2			t_map2;
-typedef struct s_anim			t_anim;
-typedef struct s_renderer		t_renderer;
-typedef struct s_font			t_font;
-
-t_img		*sprite(t_game *game, char *filename);
-
-// ----------------------------------------------
-// EDIT MODE
-
-int			edit_update_hook(t_game *game);
-int			edit_mouse_hook(unsigned int button, int x, int y, t_game *game);
-
-// ----------------------------------------------
-// GAME
-
-enum e_sprite
+enum
 {
-	SP_WATER,
-	SP_DOOR,
-	SP_GROUND_M,
-	SP_GROUND_T,
-	SP_GROUND_TL,
-	SP_GROUND_TR,
-	SP_GROUND_L,
-	SP_GROUND_R,
-	SP_GROUND_B,
-	SP_GROUND_BL,
-	SP_GROUND_BR,
-	SP_GROUND_TLR,
-	SP_GROUND_LR,
-	SP_GROUND_BLR,
-	SP_GROUND_LBT,
-	SP_GROUND_BT,
-	SP_GROUND_RBT,
-	SP_GROUND_ALL,
-	SP_SAND_M,
-	SP_SAND_T,
-	SP_SAND_TL,
-	SP_SAND_TR,
-	SP_SAND_L,
-	SP_SAND_R,
-	SP_SAND_B,
-	SP_SAND_BL,
-	SP_SAND_BR,
-	SP_SAND_TLR,
-	SP_SAND_LR,
-	SP_SAND_BLR,
-	SP_SAND_LBT,
-	SP_SAND_BT,
-	SP_SAND_RBT,
-	SP_SAND_ALL,
-	SP_CLIFF_TL,
-	SP_CLIFF_T,
-	SP_CLIFF_TR,
-	SP_CLIFF_L,
-	SP_CLIFF_M,
-	SP_CLIFF_R,
-	SP_CLIFF_BL,
-	SP_CLIFF_B,
-	SP_CLIFF_BR,
-	SP_CLIFF_TLR,
-	SP_CLIFF_LR,
-	SP_CLIFF_BLR,
-	SP_CLIFF_LBT,
-	SP_CLIFF_BT,
-	SP_CLIFF_RBT,
-	SP_CLIFF_ALL,
-	SP_CLIFF_SIDE_L,
-	SP_CLIFF_SIDE_M,
-	SP_CLIFF_SIDE_R,
-	SP_CLIFF_SIDE_ALL,
-	SP_STAIR_LEFT,
-	SP_STAIR_MID,
-	SP_STAIR_RIGHT,
-	SP_STAIR_ALL,
-	SP_BTN_LEFT,
-	SP_BTN_MID,
-	SP_BTN_RIGHT,
-	SP_BTN_ALL,
-	SP_BTN_LEFT_P,
-	SP_BTN_MID_P,
-	SP_BTN_RIGHT_P,
-	SP_BTN_ALL_P,
-	SP_POINTER,
-	SP_HL_TL,
-	SP_HL_TR,
-	SP_HL_BL,
-	SP_HL_BR,
-	SP_BNR_TL,
-	SP_BNR_T,
-	SP_BNR_TR,
-	SP_BNR_L,
-	SP_BNR_M,
-	SP_BNR_R,
-	SP_BNR_BL,
-	SP_BNR_B,
-	SP_BNR_BR,
-	SP_BNRV_TL,
-	SP_BNRV_T,
-	SP_BNRV_TR,
-	SP_BNRV_L,
-	SP_BNRV_M,
-	SP_BNRV_R,
-	SP_BNRV_BL,
-	SP_BNRV_B,
-	SP_BNRV_BR,
-	SP_BNRCL_TL,
-	SP_BNRCL_T,
-	SP_BNRCL_TR,
-	SP_BNRCL_L,
-	SP_BNRCL_M,
-	SP_BNRCL_R,
-	SP_BNRCL_BL,
-	SP_BNRCL_B,
-	SP_BNRCL_BR,
-	SP_BNRCR_TL,
-	SP_BNRCR_T,
-	SP_BNRCR_TR,
-	SP_BNRCR_L,
-	SP_BNRCR_M,
-	SP_BNRCR_R,
-	SP_BNRCR_BL,
-	SP_BNRCR_B,
-	SP_BNRCR_BR,
-	SP_RBN_LEFT,
-	SP_RBN_MID,
-	SP_RBN_RIGHT,
-	SP_PLUS,
-	SP_LOCK,
-	SP_ONE,
-	SP_TWO,
-	SP_THREE,
-	SP_GOLDMINEA,
-	SP_GOLDMINEI,
-	SP_MAX,
+	// Regular sides
+	LEFT = 0,
+	RIGHT = 1,
+	TOP = 2,
+	BOTTOM = 3,
+	LEFT_TOP = 4,
+	LEFT_BOTTOM = 5,
+	RIGHT_TOP = 6,
+	RIGHT_BOTTOM = 7,
+	ALL = 8,
+	NONE = 9,
+	LEFT_TOP_BOTTOM = 10,
+	TOP_BOTTOM = 11,
+	RIGHT_TOP_BOTTOM = 12,
+	LEFT_RIGHT_TOP = 13,
+	LEFT_RIGHT = 14,
+	LEFT_RIGHT_BOTTOM = 15,
+
+	// Corners
+	ALL_COR = 16,
+	RIGHT_BOTTOM_COR = 17,
+	LEFT_BOTTOM_COR = 18,
+	RIGHT_TOP_COR = 19,
+	LEFT_TOP_COR = 20,
+
+	// Mix
+	RB_COR_LT_SIDE = 21,
+	LB_COR_RT_SIDE = 22,
+	RT_COR_LB_SIDE = 23,
+	LT_COR_RB_SIDE = 24,
+
+	LRT_COR = 25,
+	LRB_COR = 26,
+	RTB_COR = 27,
+	LTB_COR = 28,
+
+	LRT_COR_B_SIDE = 29,
+	LRB_COR_T_SIDE = 30,
+	RTB_COR_L_SIDE = 31,
+	LTB_COR_R_SIDE = 32,
+
+	LT_COR_B_SIDE = 33,
+	LB_COR_T_SIDE = 34,
+	RT_COR_L_SIDE = 35,
+	LT_COR_R_SIDE = 36,
+
+	RT_COR_B_SIDE = 37,
+	RB_COR_T_SIDE = 38,
+	RB_COR_L_SIDE = 39,
+	LB_COR_R_SIDE = 40,
+
+	TILE_MAX,
 };
 
-typedef struct s_explosion
+typedef struct s_tiles
 {
-	t_anim	*anim;
-	t_vec2	pos;
-	bool	spawned;
-}	t_explosion;
+	t_sprite *door[6];
+	t_sprite *gem[6];
+	t_sprite *sides[TILE_MAX];
+	t_sprite *grass;
+	t_sprite *red_flower;
+	t_sprite *yellow_flower;
+	t_sprite *glowing_tree;
+	t_sprite *player;
+	t_sprite *projectile;
+	t_sprite *golem;
+	t_sprite *wall;
+	t_sprite *ui;
+	t_sprite *health_bar;
+} t_tiles;
 
-# define EXPLOSION_COUNT 12
-
-typedef struct s_end
-{
-	t_explosion	explosions[EXPLOSION_COUNT];
-	long		next_spawn;
-	t_btn		exit;
-	t_vec2i		camera_pos;
-	bool		camera_pos_cached;
-	char		*title;
-}	t_end;
+# define TIME_BETWEEN_FRAMES 16
+# define FRAME_TIME 0.01666666666
 
 typedef struct s_game
 {
-	void		*mlx;
-	void		*win;
-	bool		*keys;
-	t_img		*canvas;
-	t_entity	**entities;
-	long		last_update;
-	t_renderer	*rdr;
+	t_xvar *mlx;
+	void   *win;
+	t_img  *canvas;
 
-	char		*buffer;
+	suseconds_t		last_update_millis;
+	t_render_graph *graph;
 
-	t_entity	*player;
-	t_entity	*player2;
+	float	camera_x;
+	float	camera_y;
+	t_map  *map;
+	t_tiles tiles;
+	int		collectibles;
+	int		total_collectibles;
+	int		mouvements;
+	int		player_start_present;
+	int		exit_present;
 
-	t_map2		*map2;
-	bool		map_valid;
+	t_ui **ui;
 
-	t_gamemenu	*menu;
-	bool		menu_opened;
+	t_entity_type *player_type;
+	t_entity_type *collectible_type;
+	t_entity_type *door_type;
+	t_entity_type *projectile_type;
+	t_entity_type *golem_type;
+	t_entity_type *wall_type;
 
-	t_editor	editor;
-	bool		editor_mode;
+	int key_up;
+	int key_down;
+	int key_left;
+	int key_right;
+	int key_q;
+	int key_w;
+	int key_e;
+	int key_r;
+	int key_space;
+} t_game;
 
-	t_vec2i		camera_pos;
-
-	t_end		end;
-	bool		end_reached;
-
-	t_vec2		start_pos;
-	int			start_level;
-
-	int			collectibles_count;
-	int			collectibles;
-	int			moves;
-
-	t_vec2		exit_pos;
-	int			exit_level;
-
-	suseconds_t	start_time;
-	suseconds_t	end_time;
-
-	t_font		*font;
-	t_font		*small_font;
-	t_font		*symbols_font;
-
-	t_anim		*foam_anim;
-	t_img		*gem;
-	t_img		**goblin_walk;
-	t_img		**goblin_idle;
-	t_img		**goblin_atk_side;
-	t_img		**goblin2_walk;
-	t_img		**goblin2_idle;
-	t_img		**goblin2_atk_side;
-	t_img		**warrior_walk;
-	t_img		**warrior_idle;
-	t_img		**warrior_atk_side;
-	t_img		**money_spawn;
-	t_img		**foam;
-	t_img		**explosion;
-	t_img		*sprites[SP_MAX];
-}	t_game;
-
-# define UPDATE_INTERVAL 16
-
-t_img		**sp(t_game *g);
-
-void		load_sprites(t_game *game);
-void		load_sprites2(t_game *game, t_img **sp);
-
-suseconds_t	getms(void);
-t_entity	*add_entity(t_entity ***entities, t_entity *entity);
-void		remove_entity(t_game *game, int x, int y);
-
-void		game_free(t_game *game);
-bool		is_key_pressed(t_game *game, int keycode);
-
-int			update_hook(t_game *game);
-int			key_pressed_hook(int keycode, t_game *game);
-int			key_released_hook(int keycode, t_game *game);
-int			close_hook(t_game *game);
-int			mouse_hook(unsigned int btn, int x, int y, t_game *game);
-
-void		draw_hud(t_game *game);
-
-void		init_end(t_game *game);
-void		free_end(t_game *game);
-void		draw_end(t_game *game);
-t_vec2		end_get_rand_pos(void);
-void		shake_screen(t_game *game);
-
-t_vec2		camera_off(t_game *game, t_vec2 pos);
-
-// ----------------------------------------------
-// MAP
-
-# define SCALE       1
-# define TILE_SIZE   64
-# define SCALED_SIZE 64
-
-typedef enum tile
+enum
 {
-	TILE_EMPTY,
-	TILE_SOLID,
-	TILE_DOOR,
-	TILE_COLLECT,
-	TILE_PLAYER,
-	TILE_STAIR,
-	TILE_ENEMY
-}	t_tile;
+	GROUND,
+	EMPTY,
+	GRASS,
+};
 
-typedef struct s_level
+typedef struct s_tile
 {
-	t_map2	*map;
-	t_tile	*data;
-	char	*string;
-	char	*filename;
-	int		width;
-	int		height;
-	int		index;
-}	t_level;
+	int		  x;
+	int		  y;
+	int		  type;
+	t_sprite *img;
+} t_tile;
 
-typedef struct s_map2
+typedef struct s_map
 {
-	t_level	*levels;
-	int		level_count;
-	int		width;
-	int		height;
-}	t_map2;
+	char	  *str;
+	int		   width;
+	int		   height;
+	int		   start_x;
+	int		   start_y;
+	t_entity  *player;
+	t_tile	  *tiles;
+	t_entity **entities;
+	float	   default_intensity;
+	t_light	 **lights;
+	int		   light_count;
+} t_map;
 
-t_map2		*map2_load(t_game *game, char **filenames, int count);
-void		map2_draw(t_game *game, t_map2 *map, t_renderer *rdr);
-void		map2_save(t_map2 *map, t_game *game);
-void		map2_reload(t_game *game, t_map2 *map);
-void		map2_free(t_map2 *map);
+int on_expose(t_game *game);
 
-void		draw_empty(t_game *g, int index, int x, int y);
-void		draw_door(t_game *g, int index, int x, int y);
-void		draw_stair(t_game *g, int index, int x, int y);
+t_map *create_map(t_game *game, char *filename);
+void   load_tiles(t_game *game);
 
-char		*read_to_string(char *filename);
+void add_light(t_game *game, t_light *light);
+void add_entity(t_game *game, t_entity *entity);
 
-t_img		*get_ground_tile(t_game *game, t_level *map, int x, int y);
-
-bool		check_files(char **filenames, int count);
-bool		check_errors(t_map2 *map);
-bool		check_finish(t_game *game, t_map2 *map);
-
-int			line_width_and_check(char *str);
-int			line_count(char *str);
-
-t_tile		etype_to_tile(t_etype etype);
+suseconds_t getms();
 
 #endif
